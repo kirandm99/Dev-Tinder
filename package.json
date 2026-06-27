@@ -1,0 +1,24 @@
+{
+  "name": "dev_tinder_be",
+  "version": "1.0.0",
+  "description": "Its Dev Tinder backend Code",
+  "main": "index.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js"
+  },
+  "keywords": [
+    "Node",
+    "JS",
+    "React",
+    "JS",
+    "MongoDB",
+    "Express",
+    "JS"
+  ],
+  "author": "Kiran DM",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
