@@ -4,10 +4,14 @@ const { adminAuthentication } = require("./middlewares/auth");
 const User = require("./models/user");
 const { validateSignUpData } = require("./utils/validator");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -35,8 +39,14 @@ app.post("/login", async (req, res) => {
       throw new Error("Invalid Credentials");
     }
 
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const passwordMatch = await user.validatePassword(password);
     if (passwordMatch) {
+      const token = await user.getJwtToken();
+      res.cookie("token", token, {
+        httpOnly: true,
+        sameSite: "strict",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
       res.status(200).json({ message: "User logged in successfully" });
     } else {
       throw new Error("Invalid Credentials");
@@ -47,6 +57,19 @@ app.post("/login", async (req, res) => {
       .json({ message: "Error logging in user :" + error.message });
   }
   const { emailId, password } = req.body;
+});
+
+app.get("/profile", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    res
+      .status(200)
+      .json({ message: "User profile fetched successfully", user });
+  } catch (error) {
+    res
+      .status(400)
+      .json({ message: "Error fetching user profile :" + error.message });
+  }
 });
 
 app.get("/user", async (req, res) => {
@@ -108,6 +131,17 @@ app.patch("/user/:userId", async (req, res) => {
     res.status(200).json({ message: "User Updated Successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error while updating user", error });
+  }
+});
+
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+  try {
+    const user = req.user;
+    res.status(200).json({ message: req.user.firstName + " sending request" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error while sending connection request " + error.message,
+    });
   }
 });
 
