@@ -13,64 +13,13 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-app.post("/signup", async (req, res) => {
-  try {
-    validateSignUpData(req);
-    const { firstName, lastName, emailId, password } = req.body;
-    const passwordHash = await bcrypt.hash(password, 10);
-    const user = new User({
-      firstName,
-      lastName,
-      emailId,
-      password: passwordHash,
-    });
-    await user.save();
-    res.status(201).json({ message: "User created successfully" });
-  } catch (error) {
-    res.status(400).json({ message: "Error creating user :" + error.message });
-  }
-});
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
 
-app.post("/login", async (req, res) => {
-  try {
-    const { emailId, password } = req.body;
-    const user = await User.findOne({ emailId: emailId });
-    if (!user) {
-      throw new Error("Invalid Credentials");
-    }
-
-    const passwordMatch = await user.validatePassword(password);
-    if (passwordMatch) {
-      const token = await user.getJwtToken();
-      res.cookie("token", token, {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-      res.status(200).json({ message: "User logged in successfully" });
-    } else {
-      throw new Error("Invalid Credentials");
-    }
-  } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error logging in user :" + error.message });
-  }
-  const { emailId, password } = req.body;
-});
-
-app.get("/profile", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-    res
-      .status(200)
-      .json({ message: "User profile fetched successfully", user });
-  } catch (error) {
-    res
-      .status(400)
-      .json({ message: "Error fetching user profile :" + error.message });
-  }
-});
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 app.get("/user", async (req, res) => {
   const emailId = req.body.email;
@@ -131,17 +80,6 @@ app.patch("/user/:userId", async (req, res) => {
     res.status(200).json({ message: "User Updated Successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error while updating user", error });
-  }
-});
-
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-  try {
-    const user = req.user;
-    res.status(200).json({ message: req.user.firstName + " sending request" });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error while sending connection request " + error.message,
-    });
   }
 });
 
