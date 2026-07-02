@@ -44,7 +44,10 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["Male", "Female", "Other"],
+      enum: {
+        values: ["Male", "Female", "Other"],
+        message: "{VALUE} is not valid gender type",
+      },
     },
     photoUrl: {
       type: String,
@@ -58,7 +61,7 @@ const userSchema = new mongoose.Schema(
     },
     about: {
       type: String,
-      minLength: 20,
+      minLength: 5,
       maxLength: 200,
       default: "Hey there! I am using DevTinder.",
     },
@@ -75,6 +78,8 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   },
 );
+
+userSchema.index({ firstName: 1, lastName: 1 });
 
 userSchema.methods.getJwtToken = async function () {
   const user = this;
