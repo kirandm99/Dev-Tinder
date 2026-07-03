@@ -69,4 +69,47 @@ requestRouter.post(
   },
 );
 
+requestRouter.post(
+  "/request/review/:status/:requestId",
+  userAuth,
+  async (req, res) => {
+    const loggedUserId = req.user._id;
+    const { status, requestId } = req.params;
+
+    try {
+      const allowedStatus = ["accepted", "rejected"];
+
+      if (!allowedStatus.includes(status)) {
+        return res.status(400).json({
+          message: "Invalid status type : " + status,
+        });
+      }
+
+      const connectionRequest = await ConnectionRequstModel.findOne({
+        _id: requestId,
+        toUserId: loggedUserId,
+        status: "interested",
+      });
+
+      if (!connectionRequest) {
+        return res.status(404).json({
+          message: "No pending connection request found from this user",
+        });
+      }
+
+      connectionRequest.status = status;
+      const data = await connectionRequest.save();
+
+      res.status(200).json({
+        message: "Connection request reviewed successfully",
+        data,
+      });
+    } catch (error) {
+      res.status(500).json({
+        message: "Error while reviewing connection request " + error.message,
+      });
+    }
+  },
+);
+
 module.exports = requestRouter;

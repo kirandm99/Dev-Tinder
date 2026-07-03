@@ -19,7 +19,6 @@ const connectionRequestSchema = new mongoose.Schema(
         values: ["ignored", "interested", "accepted", "rejected"],
         message: "{VALUE} is not valid status type",
       },
-      default: "pending",
     },
   },
   { timestamps: true },
