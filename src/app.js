@@ -13,8 +13,11 @@ const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5147",
+    origin: "http://localhost:5173",
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    maxAge: 3600,
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 

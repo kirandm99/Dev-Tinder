@@ -38,9 +38,11 @@ authRouter.post("/login", async (req, res) => {
         sameSite: "strict",
         maxAge: 24 * 60 * 60 * 1000,
       });
-      res.status(200).json({ message: "User logged in successfully" });
+      res
+        .status(200)
+        .json({ message: "User logged in successfully", data: user });
     } else {
-      throw new Error("Invalid Credentials");
+      return res.status(400).json({ message: "Invalid Credentials" });
     }
   } catch (error) {
     res

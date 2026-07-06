@@ -8,7 +8,7 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
     const user = req.user;
     res
       .status(200)
-      .json({ message: "User profile fetched successfully", user });
+      .json({ message: "User profile fetched successfully", data: user });
   } catch (error) {
     res
       .status(400)
@@ -50,11 +50,9 @@ profileRouter.patch("/profile/password", userAuth, async (req, res) => {
     user.password = newPassword;
     await user.save();
 
-    res
-      .status(200)
-      .json({
-        message: `${user.firstName} your password updated successfully`,
-      });
+    res.status(200).json({
+      message: `${user.firstName} your password updated successfully`,
+    });
   } catch (error) {
     res
       .status(400)
