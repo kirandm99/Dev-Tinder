@@ -9,6 +9,8 @@ const cors = require("cors");
 const jwt = require("jsonwebtoken");
 const { userAuth } = require("./middlewares/auth");
 
+require("./utils/cron");
+
 const app = express();
 
 app.use(
