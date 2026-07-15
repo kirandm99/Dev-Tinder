@@ -4,7 +4,8 @@ const ConnectionRequstModel = require("../models/connectionRequest");
 const sendEmail = require("../utils/ses_sendemail");
 
 cron.schedule("18 23 * * *", async () => {
-  const yesterday = subDays(new Date(), 0);
+  //send  eamil to all the users who got request the previous day
+  const yesterday = subDays(new Date(), 1);
   const yesterdayStart = startOfDay(yesterday);
   const yesterdayEnd = endOfDay(yesterday);
 
