@@ -49,6 +49,13 @@ const userSchema = new mongoose.Schema(
         message: "{VALUE} is not valid gender type",
       },
     },
+    isPremium: {
+      type: String,
+      required: true,
+    },
+    membershipType: {
+      type: String,
+    },
     photoUrl: {
       type: String,
       default:
