@@ -82,12 +82,56 @@ PaymentRouter.post("/payment/webhook", async (req, res) => {
   });
 });
 
-PaymentRouter.get("/payment/verify", userAuth, async (req, res) => {
-  const user = req.user.toJSON();
-  if (user.isPremium) {
-    return res.status(200).json({ ...user });
+PaymentRouter.post("/payment/verify", userAuth, async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } =
+      req.body;
+
+    const generatedSignature = crypto
+      .createHmac("sha256", process.env.RAZOR_PAY_KEY_SECRET)
+      .update(razorpay_order_id + "|" + razorpay_payment_id)
+      .digest("hex");
+
+    if (generatedSignature !== razorpay_signature) {
+      return res.status(400).json({
+        message: "Invalid Payment Signature",
+      });
+    }
+    const payment = await Payment.findOne({
+      orderId: razorpay_order_id,
+    });
+
+    if (!payment) {
+      return res.status(404).json({
+        message: "Payment not found",
+      });
+    }
+
+    payment.paymentId = razorpay_payment_id;
+    payment.status = "captured";
+
+    await payment.save();
+
+    await User.findByIdAndUpdate(payment.userId, {
+      isPremium: true,
+      membershipType: payment.notes.membershipType,
+    });
+
+    res.json({
+      success: true,
+      message: "Payment Verified Successfully",
+      ...user,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error While Verifying Payment" + err.message,
+    });
   }
-  return res.status(400).json({ ...user });
+  // const user = req.user.toJSON();
+  // if (user.isPremium) {
+  //   return res.status(200).json({ ...user });
+  // }
+  // return res.status(400).json({ ...user });
 });
 
 module.exports = PaymentRouter;
